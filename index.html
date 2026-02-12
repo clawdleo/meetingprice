@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeetingPrice - See What Meetings Really Cost</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .fire-gradient { background: linear-gradient(135deg, #f97316 0%, #ef4444 50%, #dc2626 100%); }
+        .money-pulse { animation: pulse 1s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .counter { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Hero Section -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                <span class="fire-gradient bg-clip-text text-transparent">💸 MeetingPrice</span>
+            </h1>
+            <p class="text-xl text-gray-400">Watch money burn in real-time</p>
+        </div>
+
+        <!-- Main Calculator -->
+        <div class="max-w-4xl mx-auto">
+            <!-- The Big Number -->
+            <div class="bg-gray-800 rounded-3xl p-8 md:p-12 text-center mb-8 border border-gray-700">
+                <p class="text-gray-400 text-lg mb-2">This meeting has cost</p>
+                <div class="text-6xl md:text-8xl font-bold fire-gradient bg-clip-text text-transparent counter" id="totalCost">
+                    €0.00
+                </div>
+                <p class="text-gray-500 mt-4" id="costPerSecond">€0.00 per second</p>
+                
+                <!-- Timer -->
+                <div class="mt-8 flex justify-center gap-4">
+                    <div class="bg-gray-700 rounded-xl px-6 py-4">
+                        <div class="text-3xl font-bold counter" id="hours">00</div>
+                        <div class="text-xs text-gray-400 uppercase">Hours</div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-600 self-center">:</div>
+                    <div class="bg-gray-700 rounded-xl px-6 py-4">
+                        <div class="text-3xl font-bold counter" id="minutes">00</div>
+                        <div class="text-xs text-gray-400 uppercase">Minutes</div>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-600 self-center">:</div>
+                    <div class="bg-gray-700 rounded-xl px-6 py-4">
+                        <div class="text-3xl font-bold counter" id="seconds">00</div>
+                        <div class="text-xs text-gray-400 uppercase">Seconds</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Attendees -->
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>👥</span> Attendees
+                    </h2>
+                    <div id="attendeesList" class="space-y-3 mb-4"></div>
+                    <button onclick="addAttendee()" class="w-full py-3 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-orange-500 hover:text-orange-500 transition">
+                        + Add Person
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>📊</span> Meeting Stats
+                    </h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Total hourly cost</span>
+                            <span class="text-xl font-bold" id="hourlyRate">€0/hr</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">People in meeting</span>
+                            <span class="text-xl font-bold" id="peopleCount">0</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Avg. salary</span>
+                            <span class="text-xl font-bold" id="avgSalary">€0/yr</span>
+                        </div>
+                        <div class="pt-4 border-t border-gray-700">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">If meeting lasts 1 hour</span>
+                                <span class="text-2xl font-bold text-orange-500" id="oneHourCost">€0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <button onclick="toggleTimer()" id="timerBtn" class="flex-1 fire-gradient py-4 rounded-xl font-bold text-lg hover:opacity-90 transition">
+                    ▶️ Start Meeting
+                </button>
+                <button onclick="resetTimer()" class="flex-1 bg-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-600 transition">
+                    🔄 Reset
+                </button>
+                <button onclick="shareResults()" class="flex-1 bg-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-600 transition">
+                    📤 Share
+                </button>
+            </div>
+
+            <!-- Preset Teams -->
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 mb-8">
+                <h2 class="text-lg font-semibold mb-4">⚡ Quick Add Team</h2>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="addPreset('startup')" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition text-sm">
+                        🚀 Startup (5 people)
+                    </button>
+                    <button onclick="addPreset('enterprise')" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition text-sm">
+                        🏢 Enterprise (10 people)
+                    </button>
+                    <button onclick="addPreset('exec')" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition text-sm">
+                        👔 Exec Meeting (6 people)
+                    </button>
+                    <button onclick="addPreset('allhands')" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600 transition text-sm">
+                        🎪 All-Hands (50 people)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Comparisons -->
+            <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700" id="comparisons" style="display: none;">
+                <h2 class="text-lg font-semibold mb-4">💡 This meeting could have paid for...</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="comparisonsList"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-12 text-gray-500 text-sm">
+            <p>Make meetings count. Or at least know what they cost.</p>
+            <p class="mt-2">Share this in your next meeting 😈</p>
+        </div>
+    </div>
+
+    <script>
+        let attendees = [];
+        let timerRunning = false;
+        let elapsedSeconds = 0;
+        let timerInterval = null;
+
+        const presets = {
+            startup: [
+                { role: 'CEO', salary: 120000 },
+                { role: 'CTO', salary: 110000 },
+                { role: 'Developer', salary: 70000 },
+                { role: 'Designer', salary: 60000 },
+                { role: 'Marketing', salary: 55000 }
+            ],
+            enterprise: [
+                { role: 'Director', salary: 150000 },
+                { role: 'Manager', salary: 90000 },
+                { role: 'Manager', salary: 90000 },
+                { role: 'Senior Dev', salary: 85000 },
+                { role: 'Senior Dev', salary: 85000 },
+                { role: 'Developer', salary: 65000 },
+                { role: 'Developer', salary: 65000 },
+                { role: 'QA', salary: 55000 },
+                { role: 'Designer', salary: 60000 },
+                { role: 'PM', salary: 75000 }
+            ],
+            exec: [
+                { role: 'CEO', salary: 250000 },
+                { role: 'CFO', salary: 200000 },
+                { role: 'CTO', salary: 200000 },
+                { role: 'COO', salary: 180000 },
+                { role: 'VP Sales', salary: 160000 },
+                { role: 'VP Marketing', salary: 150000 }
+            ],
+            allhands: Array(50).fill(null).map((_, i) => ({
+                role: i < 5 ? 'Executive' : i < 15 ? 'Manager' : 'Employee',
+                salary: i < 5 ? 150000 : i < 15 ? 80000 : 55000
+            }))
+        };
+
+        const comparisons = [
+            { name: '☕ Coffees', price: 5 },
+            { name: '🍕 Pizzas', price: 15 },
+            { name: '📚 Books', price: 25 },
+            { name: '🎬 Netflix months', price: 13 },
+            { name: '🎧 Spotify years', price: 120 },
+            { name: '✈️ Weekend trips', price: 300 },
+            { name: '💻 MacBooks', price: 2000 },
+            { name: '🚗 Used cars', price: 10000 }
+        ];
+
+        function addAttendee(role = '', salary = 60000) {
+            const id = Date.now();
+            attendees.push({ id, role, salary });
+            renderAttendees();
+            updateStats();
+        }
+
+        function removeAttendee(id) {
+            attendees = attendees.filter(a => a.id !== id);
+            renderAttendees();
+            updateStats();
+        }
+
+        function updateAttendee(id, field, value) {
+            const attendee = attendees.find(a => a.id === id);
+            if (attendee) {
+                attendee[field] = field === 'salary' ? parseInt(value) || 0 : value;
+                updateStats();
+            }
+        }
+
+        function renderAttendees() {
+            const container = document.getElementById('attendeesList');
+            container.innerHTML = attendees.map(a => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${a.role}" placeholder="Role" 
+                        class="flex-1 bg-gray-700 px-3 py-2 rounded-lg text-sm border border-gray-600 focus:border-orange-500 focus:outline-none"
+                        onchange="updateAttendee(${a.id}, 'role', this.value)">
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">€</span>
+                        <input type="number" value="${a.salary}" 
+                            class="w-28 bg-gray-700 pl-7 pr-3 py-2 rounded-lg text-sm border border-gray-600 focus:border-orange-500 focus:outline-none"
+                            onchange="updateAttendee(${a.id}, 'salary', this.value)">
+                    </div>
+                    <span class="text-xs text-gray-500">/yr</span>
+                    <button onclick="removeAttendee(${a.id})" class="text-gray-500 hover:text-red-500 px-2">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addPreset(type) {
+            attendees = presets[type].map((p, i) => ({
+                id: Date.now() + i,
+                role: p.role,
+                salary: p.salary
+            }));
+            renderAttendees();
+            updateStats();
+        }
+
+        function getHourlyRate() {
+            return attendees.reduce((sum, a) => sum + (a.salary / 2080), 0); // 2080 work hours per year
+        }
+
+        function updateStats() {
+            const hourly = getHourlyRate();
+            const perSecond = hourly / 3600;
+            
+            document.getElementById('hourlyRate').textContent = `€${hourly.toFixed(0)}/hr`;
+            document.getElementById('peopleCount').textContent = attendees.length;
+            document.getElementById('costPerSecond').textContent = `€${perSecond.toFixed(4)} per second`;
+            document.getElementById('oneHourCost').textContent = `€${hourly.toFixed(0)}`;
+            
+            if (attendees.length > 0) {
+                const avg = attendees.reduce((sum, a) => sum + a.salary, 0) / attendees.length;
+                document.getElementById('avgSalary').textContent = `€${(avg/1000).toFixed(0)}k/yr`;
+            } else {
+                document.getElementById('avgSalary').textContent = '€0/yr';
+            }
+            
+            updateCost();
+        }
+
+        function updateCost() {
+            const hourly = getHourlyRate();
+            const cost = (hourly / 3600) * elapsedSeconds;
+            document.getElementById('totalCost').textContent = `€${cost.toFixed(2)}`;
+            
+            // Update comparisons
+            if (cost > 0) {
+                document.getElementById('comparisons').style.display = 'block';
+                const list = document.getElementById('comparisonsList');
+                list.innerHTML = comparisons
+                    .filter(c => cost >= c.price)
+                    .slice(0, 4)
+                    .map(c => `
+                        <div class="bg-gray-700 rounded-xl p-4 text-center">
+                            <div class="text-2xl mb-1">${c.name.split(' ')[0]}</div>
+                            <div class="text-xl font-bold">${Math.floor(cost / c.price)}</div>
+                            <div class="text-xs text-gray-400">${c.name.split(' ').slice(1).join(' ')}</div>
+                        </div>
+                    `).join('');
+            }
+        }
+
+        function updateTimer() {
+            const hours = Math.floor(elapsedSeconds / 3600);
+            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+            const seconds = elapsedSeconds % 60;
+            
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            
+            updateCost();
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timerBtn');
+            
+            if (timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                btn.innerHTML = '▶️ Resume Meeting';
+                btn.classList.remove('money-pulse');
+            } else {
+                if (attendees.length === 0) {
+                    alert('Add some attendees first!');
+                    return;
+                }
+                timerInterval = setInterval(() => {
+                    elapsedSeconds++;
+                    updateTimer();
+                }, 1000);
+                timerRunning = true;
+                btn.innerHTML = '⏸️ Pause';
+                btn.classList.add('money-pulse');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            elapsedSeconds = 0;
+            updateTimer();
+            document.getElementById('timerBtn').innerHTML = '▶️ Start Meeting';
+            document.getElementById('timerBtn').classList.remove('money-pulse');
+            document.getElementById('comparisons').style.display = 'none';
+        }
+
+        function shareResults() {
+            const cost = document.getElementById('totalCost').textContent;
+            const time = `${document.getElementById('hours').textContent}:${document.getElementById('minutes').textContent}:${document.getElementById('seconds').textContent}`;
+            const text = `💸 Our meeting just cost ${cost} (${time}) with ${attendees.length} people.\n\nCalculate yours: ${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'Meeting Cost', text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Copied to clipboard!');
+            }
+        }
+
+        // Initialize with one attendee
+        addAttendee('You', 60000);
+    </script>
+</body>
+</html>
